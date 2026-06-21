@@ -12,7 +12,7 @@ pub struct ConversionResult {
 }
 
 #[tauri::command]
-pub async fn start_conversion(
+pub fn start_conversion(
     files: Vec<String>,
     output_folder: String,
     target_format: String,

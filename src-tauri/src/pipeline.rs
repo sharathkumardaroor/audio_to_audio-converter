@@ -85,18 +85,60 @@ pub fn convert_file(input_path: &str, output_path: &str, target_format: TargetFo
         }
     }
 
-    // Resampling logic (Example: normalize to 44100 if it's not already)
-    let target_sample_rate = 44100;
+    if channels == 0 {
+        return Err("No audio channels found".into());
+    }
+
+    // Resampling logic
+    let target_sample_rate = sample_rate; // Maintain source sample rate by default
     let mut processed_samples = all_samples;
+
+    // If we wanted to enforce a sample rate, we would change target_sample_rate here.
+    // For now, let's keep it same as source but leave the resampling logic for demonstration if needed.
     if sample_rate != target_sample_rate {
+        let chunk_size = 1024;
         let mut resampler = FastFixedIn::<f32>::new(
             target_sample_rate as f64 / sample_rate as f64,
             2.0,
             rubato::PolynomialDegree::Septic,
-            1024,
+            chunk_size,
             channels,
         )?;
-        processed_samples = resampler.process(&processed_samples, None)?;
+
+        let mut resampled_data = vec![Vec::new(); channels];
+        let num_input_frames = processed_samples[0].len();
+        let mut pos = 0;
+
+        while pos + chunk_size <= num_input_frames {
+            let mut chunk = vec![Vec::new(); channels];
+            for chan in 0..channels {
+                chunk[chan].extend_from_slice(&processed_samples[chan][pos..pos + chunk_size]);
+            }
+            let output_chunk = resampler.process(&chunk, None)?;
+            for chan in 0..channels {
+                resampled_data[chan].extend_from_slice(&output_chunk[chan]);
+            }
+            pos += chunk_size;
+        }
+
+        // Handle last partial chunk if any (Rubato might need padding or specific handling)
+        if pos < num_input_frames {
+             let mut chunk = vec![Vec::new(); channels];
+             for chan in 0..channels {
+                 let mut c = processed_samples[chan][pos..].to_vec();
+                 c.resize(chunk_size, 0.0);
+                 chunk[chan] = c;
+             }
+             let output_chunk = resampler.process(&chunk, None)?;
+             // We should probably truncate the output if we padded
+             let ratio = target_sample_rate as f64 / sample_rate as f64;
+             let valid_len = ((num_input_frames - pos) as f64 * ratio) as usize;
+             for chan in 0..channels {
+                 resampled_data[chan].extend_from_slice(&output_chunk[chan][..valid_len]);
+             }
+        }
+
+        processed_samples = resampled_data;
         sample_rate = target_sample_rate;
     }
 
@@ -118,25 +160,7 @@ pub fn convert_file(input_path: &str, output_path: &str, target_format: TargetFo
             }
             writer.finalize()?;
         }
-        _ => {
-            // For now, let's just output WAV for everything until we fix the other encoders.
-            // But we'll at least use the resampled audio.
-            let spec = WavSpec {
-                channels: channels as u16,
-                sample_rate: sample_rate,
-                bits_per_sample: 16,
-                sample_format: hound::SampleFormat::Int,
-            };
-            let mut writer = WavWriter::create(output_path, spec)?;
-            let num_samples = processed_samples[0].len();
-            for i in 0..num_samples {
-                for chan in 0..channels {
-                    let sample = processed_samples[chan][i];
-                    writer.write_sample((sample * i16::MAX as f32) as i16)?;
-                }
-            }
-            writer.finalize()?;
-        }
+        _ => return Err("Selected format is currently not implemented. Only WAV is supported.".into()),
     }
 
     Ok(())
