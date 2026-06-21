@@ -1,103 +1,68 @@
-```
-README.md
-# Bulk Audio Converter
+# Bulk Audio Converter (Rust + Tauri Version)
 
-A simple Bulk Audio Converter app built using [Flet](https://flet.dev/) and [FFmpeg](https://ffmpeg.org/). This application lets you select multiple audio files, choose an output folder, and convert the files to a target format (e.g., mp3, wav, ogg, flac, m4a) in bulk.
+A high-efficiency Bulk Audio Converter app built with **Rust**, **Tauri**, and **Symphonia**. This version replaces the previous Python/FFmpeg implementation with a pure Rust audio processing pipeline, ensuring zero external dependencies and native performance.
 
 ## Features
 
-- **Multi-file Selection:** Choose multiple audio files for conversion.
-- **Output Folder Selection:** Specify the folder where the converted files will be saved.
-- **Format Options:** Convert audio files to various formats.
-- **Progress Tracking:** View the current processing file, progress bar, and progress count.
-- **Result Summary:** Displays a summary of successful conversions and errors after the process completes.
+- **Pure Rust Audio Pipeline:** Uses `Symphonia` for decoding and `Hound` for encoding. No FFmpeg required.
+- **Native UI:** Built with Tauri, utilizing the OS's native WebView for a lightweight and responsive experience.
+- **Parallel Processing:** Leverages `Rayon` to utilize all CPU cores for batch conversions.
+- **Metadata Preservation:** Uses `Lofty` to copy tags and album art from original files.
+- **Standalone Binary:** Compiles into a small, portable executable (~5MB).
 
-## Requirements
+## Tech Stack
 
-- **Python 3.11+** (Tested with Python 3.13)
-- [Flet](https://github.com/flet-dev/flet) for the GUI.
-- [ffmpeg-python](https://github.com/kkroening/ffmpeg-python) for interfacing with FFmpeg.
-- **FFmpeg** executable installed on your system. Update the `FFMPEG_PATH` in `app/main.py` if needed.
+- **UI:** HTML/JS + Tailwind CSS
+- **Backend:** Rust + Tauri
+- **Audio Decoding:** [Symphonia](https://github.com/pdeljanov/Symphonia)
+- **Audio Encoding:** [Hound](https://github.com/ruuda/hound) (WAV)
+- **Metadata:** [Lofty](https://github.com/Serial-Experiments-Lofty/lofty-rs)
+- **Parallelism:** [Rayon](https://github.com/rayon-rs/rayon)
 
 ## Installation
 
-1. **Clone the repository:**
+1. **Install Rust:** [https://www.rust-lang.org/tools/install](https://www.rust-lang.org/tools/install)
+2. **Install Tauri CLI:** `npm install -g @tauri-apps/cli`
+3. **Install System Dependencies (Linux only):**
    ```bash
-   git clone https://github.com/yourusername/bulk-audio-converter.git
+   sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
    ```
-
-2. **Navigate to the project directory:**
-   ```bash
-   cd bulk-audio-converter
-   ```
-
-3. **(Optional) Create and activate a virtual environment:**
-   ```bash
-   python -m venv venv
-   # On Windows:
-   venv\Scripts\activate
-   # On macOS/Linux:
-   source venv/bin/activate
-   ```
-
-4. **Install the required packages:**
-   ```bash
-   pip install flet ffmpeg-python
-   ```
-
-5. **Ensure FFmpeg is installed:**
-   - Download FFmpeg from [here](https://ffmpeg.org/download.html) if it's not installed.
-   - Update the `FFMPEG_PATH` in `app/main.py` to point to the FFmpeg executable if necessary.
 
 ## Usage
 
-To run the application, execute:
+To run the app in development mode:
 
 ```bash
-python app/main.py
+cd src-tauri
+cargo tauri dev
 ```
 
-- The app will launch in a window sized 200x500.
-- **Row 1:** Displays the app title.
-- **Row 2:** Contains three columns for file selection, folder selection, and format selection.
-- **Row 3:** Contains two columns for status display and the "Start Conversion" button.
-- Follow the on-screen prompts:
-  - Click **Select Files** to choose audio files.
-  - Click **Output Folder** to select a destination folder.
-  - Choose the desired format from the dropdown.
-  - Click **Start Conversion** to begin processing.
-- A summary dialog will appear with conversion details upon completion.
+To build a production release:
+
+```bash
+cd src-tauri
+cargo tauri build
+```
 
 ## Project Structure
 
 ```
-bulk-audio-converter/
-│
-├── app/
-│   └── main.py       # Main application code
-├── README.md         # This file
-└── requirements.txt  # (Optional) List of dependencies
+.
+├── src-tauri/
+│   ├── src/
+│   │   ├── main.rs         # Entry point
+│   │   ├── lib.rs          # App logic and setup
+│   │   ├── commands.rs     # Tauri commands (select_files, start_conversion)
+│   │   ├── pipeline.rs     # Audio decoding/encoding pipeline
+│   │   └── metadata.rs     # Tag preservation
+│   ├── Cargo.toml          # Rust dependencies
+│   └── tauri.conf.json     # Tauri configuration
+├── ui/
+│   ├── index.html          # Main UI
+│   └── main.js             # Frontend logic
+└── README.md
 ```
-
-## Version Control & Future Enhancements
-
-- **Version Control:**  
-  This project is managed using Git. Commit and tag a new release only after verifying that the current version runs without errors.
-  
-- **Planned Enhancements:**
-  - Additional audio format support.
-  - Improved error handling and reporting.
-  - UI/UX improvements.
-  - Integration with cloud storage services for file management.
-  - Batch processing optimizations.
 
 ## License
 
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
-
-## Acknowledgments
-
-- [Flet](https://flet.dev/) for the intuitive UI framework.
-- [FFmpeg](https://ffmpeg.org/) for robust audio conversion capabilities.
-- [ffmpeg-python](https://github.com/kkroening/ffmpeg-python) for the Python interface to FFmpeg.
-```
+This project is licensed under the MIT License.
