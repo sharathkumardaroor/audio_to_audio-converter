@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bulk Audio Converter</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background-color: #f3f4f6; }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen">
+    <div class="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
+        <h1 class="text-2xl font-bold mb-6 text-center text-gray-800">Bulk Audio Converter</h1>
+
+        <div class="space-y-4">
+            <div>
+                <button id="select-files" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded transition duration-200">
+                    Select Files
+                </button>
+                <p id="file-count" class="text-sm text-gray-600 mt-1">No files selected</p>
+            </div>
+
+            <div>
+                <button id="select-folder" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded transition duration-200">
+                    Output Folder
+                </button>
+                <p id="folder-path" class="text-sm text-gray-600 mt-1">No output folder selected</p>
+            </div>
+
+            <div>
+                <label for="format" class="block text-sm font-medium text-gray-700">Target Format</label>
+                <select id="format" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md border">
+                    <option value="wav">WAV</option>
+                    <option value="mp3">MP3</option>
+                    <option value="flac">FLAC</option>
+                </select>
+            </div>
+
+            <button id="start-conversion" class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                Start Conversion
+            </button>
+
+            <div id="progress-container" class="hidden">
+                <div class="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
+                    <div id="progress-bar" class="bg-blue-600 h-2.5 rounded-full" style="width: 0%"></div>
+                </div>
+                <p id="progress-text" class="text-xs text-gray-600 mt-1 text-center">0/0</p>
+            </div>
+
+            <div id="status" class="text-sm text-center mt-4"></div>
+        </div>
+    </div>
+    <script src="main.js"></script>
+</body>
+</html>
